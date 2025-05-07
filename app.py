@@ -1,33 +1,35 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ultralytics import YOLO
-import cv2
 import numpy as np
-import os
+import cv2
+import base64
+from PIL import Image
+import io
 
 app = Flask(__name__)
 CORS(app)
-
-# Load model
-model_path = os.path.join("model", "80Yolov8.pt")
-model = YOLO(model_path)
+model = YOLO("80Yolov8.pt")
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+    if "image" not in request.files:
+        return jsonify({"error": "No image provided"}), 400
 
-    file = request.files['file']
-    image = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_COLOR)
+    file = request.files["image"]
+    img = Image.open(file.stream).convert("RGB")
+    img_array = np.array(img)
 
-    results = model.predict(source=image, verbose=False)
+    results = model(img_array)
     detections = []
 
     for box in results[0].boxes:
-        detections.append({
-            "confidence": float(box.conf.item()),
-            "bbox": box.xyxy[0].tolist(),
-            "class_id": int(box.cls.item())
-        })
+        conf = float(box.conf[0])
+        cls = int(box.cls[0])
+        detections.append({"class_id": cls, "confidence": conf})
 
-    return jsonify({"detections": detections})
+    img_annotated = results[0].plot()
+    _, buffer = cv2.imencode(".jpg", img_annotated)
+    encoded_image = base64.b64encode(buffer).decode("utf-8")
+
+    return jsonify({"detections": detections, "annotated_image": encoded_image})
