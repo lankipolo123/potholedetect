@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: roadfix-backend
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PORT
+        value: 8000
+    plan: free
