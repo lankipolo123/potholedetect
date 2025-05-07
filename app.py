@@ -62,4 +62,5 @@ def predict():
     return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    # Only used in local development. Railway uses gunicorn to start the app.
+    app.run(host='0.0.0.0', port=8080)
