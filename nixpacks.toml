@@ -1,5 +1,2 @@
 [phases.setup]
 nixPkgs = ["libGL", "libGLU", "xorg.libX11"]
-
-[variables]
-PORT = "8080"
