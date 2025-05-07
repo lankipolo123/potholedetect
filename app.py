@@ -5,10 +5,12 @@ from PIL import Image
 import io
 import os
 
+# Fix: Set YOLO config dir to prevent libGL warning
+os.environ["YOLO_CONFIG_DIR"] = "/tmp"
+
 app = Flask(__name__)
 CORS(app)
 
-# Load YOLO model
 model_path = os.path.join(os.getcwd(), 'models', '80Yolov8.pt')
 model = YOLO(model_path)
 
